@@ -79,7 +79,7 @@ def _prepare_tfrecord(type, images, class_dict, shards, data_src, tfrecord_filen
     filename = os.path.join(data_src, type + '.' + tfrecord_filename)
 
     writer = tf.python_io.TFRecordWriter(filename)
-    
+
 
 
     return 0
