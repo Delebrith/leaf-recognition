@@ -20,7 +20,8 @@ flags.DEFINE_float('test_set_size', 0.2, 'Float: The proportion of examples in t
 # Seed for repeatability.
 flags.DEFINE_integer('random_seed', 0, 'Int: Random seed to use for repeatability.')
 
-flags.DEFINE_string('tfrecord_file', 'data.tfrecord', 'String: The base of output filename to name your TFRecord file')
+flags.DEFINE_string('tfrecord_file', 'data', 'String: The base of output filename to name your TFRecord file. '
+                                             'You\'ll find your datasets in data_src directory.')
 
 FLAGS = flags.FLAGS
 
@@ -28,9 +29,14 @@ FLAGS = flags.FLAGS
 def main():
 
     if not FLAGS.tfrecord_file:
-        raise ValueError('tfrecord_file not given')
+        raise ValueError('tfrecord filename not given')
     if not FLAGS.data_src:
         raise ValueError('data_src not given')
+
+    if not os.path.exists(FLAGS.data_src):
+        raise ValueError('data_src directory does not exist')
+    if not os.path.isdir(FLAGS.data_src):
+        raise ValueError('data_src is not a directory')
 
     image_files, classes = _get_files_in_classes(FLAGS.data_src)
     class_ids_dict = dict(zip(classes, range(len(classes))))
@@ -67,9 +73,6 @@ def _get_files_in_classes(data_src):
             path = os.path.join(directory, element)
             if os.path.isfile(path):
                 images.append(path)
-
-    print(classes)
-    print(images)
 
     return images, classes
 
