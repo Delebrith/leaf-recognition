@@ -6,6 +6,7 @@ import sys
 import tensorflow as tf
 import cv2
 import numpy as np
+from src.file_utils import get_files_in_classes
 
 # ===============DEFINE ARGUMENTS==============
 flags = tf.app.flags
@@ -38,7 +39,7 @@ def main():
     if not os.path.isdir(FLAGS.data_src):
         raise ValueError('data_src is not a directory')
 
-    image_files, classes = _get_files_in_classes(FLAGS.data_src)
+    image_files, classes = get_files_in_classes(FLAGS.data_src)
     class_ids_dict = dict(zip(classes, range(len(classes))))
     print('Total images: %d' % len(image_files))
 
@@ -55,26 +56,6 @@ def main():
     _prepare_tfrecord('training', training_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
     _prepare_tfrecord('test', test_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
     _prepare_tfrecord('validation', validation_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
-
-
-def _get_files_in_classes(data_src):
-    class_directory = os.listdir(data_src)[0]
-    directories = []
-    classes = []
-    for element in os.listdir(os.path.join(data_src, class_directory)):
-        path = os.path.join(os.path.join(data_src, class_directory), element)
-        if os.path.isdir(path):
-            directories.append(path)
-            classes.append(element)
-
-    images = []
-    for directory in directories:
-        for element in os.listdir(directory):
-            path = os.path.join(directory, element)
-            if os.path.isfile(path):
-                images.append(path)
-
-    return images, classes
 
 
 def _read_image(path):
