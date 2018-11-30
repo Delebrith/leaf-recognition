@@ -34,7 +34,7 @@ def main():
     if not os.path.exists(FLAGS.data_dest):
         os.makedirs(FLAGS.data_dest)
 
-    if FLAGS.colors not in ['gray', 'hsv'] or FLAGS.rich_keypoints not in ['yes', 'no']:
+    if FLAGS.colors not in ['gray', 'hsv', 'rgb'] or FLAGS.rich_keypoints not in ['yes', 'no']:
         raise ValueError('invalid arguments in --colors or --rich_keypoints')
 
     images, classes = get_files_in_classes(FLAGS.data_src)
@@ -56,6 +56,8 @@ def sift_extraction(images, classes, dest_dir):
 
         if FLAGS.colors == 'gray':
             processed = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        elif FLAGS.colors == 'rgb':
+            processed = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         else:
             processed = cv2.cvtColor(image, cv2.COLOR_BGR2HSV_FULL)
 
