@@ -9,18 +9,18 @@ class Perceptron(NeuralNetwork):
 
     def __init__(self, input_width, input_height, first_hidden_size, second_hidden_size,
                  classes, restore=False):
-        self.input_width = input_width
-        self.input_height = input_height
         self.first_hidden_size = first_hidden_size
         self.second_hidden_size = second_hidden_size
         self.classes = classes
-        NeuralNetwork.__init__(self, input_width, input_height, restore)
+        NeuralNetwork.__init__(self, input_width, input_height, classes, restore)
 
     def _build(self):
         initializer = tf.random_normal_initializer(0.0, 1.0)
 
-        image = cv2.resize(tf.cast(tf.decode_raw(self.image_content, tf.uint8), tf.float32),
-                           (self.input_width, self.input_height))
+        image = tf.reshape(tf.cast(tf.decode_raw(self.image_content, tf.uint8), tf.float32),
+                           [-1, self.input_width, self.input_height, 3])
+
+        image = tf.image.resize_image_with_pad(image, self.input_width, self.input_height)
 
         image = np.array(image) / 255
 
