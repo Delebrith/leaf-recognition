@@ -1,5 +1,5 @@
 import tensorflow as tf
-from src.perceptron import Perceptron
+from src.Perceptron import Perceptron
 
 # ===============DEFINE ARGUMENTS==============
 flags = tf.app.flags
@@ -36,9 +36,6 @@ def main():
         raise ValueError('Mode should be specified as one of [use, train, test]')
 
     perceptron = Perceptron(128, 128, FLAGS.first_layer, FLAGS.second_layer, FLAGS.classes)
-
-    perceptron.train(FLAGS.training_data_set, FLAGS.validation_data_set, epochs=FLAGS.epochs, batchsize=32)
-
 
 if __name__ == "__main__":
     main()
