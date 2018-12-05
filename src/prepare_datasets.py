@@ -6,6 +6,7 @@ import sys
 import tensorflow as tf
 import cv2
 import numpy as np
+import pandas as pd
 from src.file_utils import get_files_in_classes
 
 # ===============DEFINE ARGUMENTS==============
@@ -53,10 +54,12 @@ def main():
     training_files = image_files[test_index:]
 
     timestamp = datetime.datetime.now().isoformat()
-    _prepare_tfrecord('training', training_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
-    _prepare_tfrecord('test', test_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
-    _prepare_tfrecord('validation', validation_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
-
+    # _prepare_tfrecord('training', training_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
+    # _prepare_tfrecord('test', test_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
+    # _prepare_tfrecord('validation', validation_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
+    _prepare_dataframe('training', training_files, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
+    _prepare_dataframe('test', test_files, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
+    _prepare_dataframe('validation', validation_files, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
 
 def _read_image(path):
     image = cv2.imread(path)
@@ -76,8 +79,8 @@ def _bytes_feature(value):
 def _prepare_tfrecord(type, files, class_dict, data_src, tfrecord_filename, timestamp):
     assert type in ['training', 'validation', 'test']
 
-    filename = os.path.join(data_src, '%s-%s-%s.tfrecord' % (
-        type, tfrecord_filename, timestamp
+    filename = os.path.join(data_src, '%s-%s.tfrecord' % (
+        type, tfrecord_filename
     ))
     writer = tf.python_io.TFRecordWriter(filename)
 
@@ -94,6 +97,35 @@ def _prepare_tfrecord(type, files, class_dict, data_src, tfrecord_filename, time
         writer.write(example.SerializeToString())
 
     writer.close()
+
+
+def _prepare_dataframe(type, files, data_src, tfrecord_filename, timestamp):
+    assert type in ['training', 'validation', 'test']
+
+    output_filename = os.path.join(data_src, '%s-%s.csv' % (
+        type, tfrecord_filename
+    ))
+    df = pd.DataFrame([], columns=['data', 'class'])
+
+    os.makedirs(os.path.join(data_src, type))
+
+    for i in range(0, len(files)):
+        print('Including image %d/%d into %s dataset' % (i+1, len(files), type))
+        sys.stdout.flush()
+
+        classname = os.path.basename(os.path.dirname(files[i]))
+
+        filename = os.path.basename(files[i])
+        filename = os.path.splitext(filename)[0]
+        filename = filename + '.jpg'
+
+        image = cv2.imread(files[i])
+        cv2.imwrite(filename=os.path.join(data_src, os.path.join(type, filename)), img=image)
+
+        df = df.append({'data': filename,
+                        'class': classname}, ignore_index=True)
+
+    df.to_csv(output_filename, index=False)
 
 
 if __name__ == "__main__":
