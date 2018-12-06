@@ -1,9 +1,10 @@
 from keras.models import Sequential
-from keras.layers import Dense, Activation, Softmax
+from keras.layers import Dense, Flatten
 from keras.utils import print_summary
 from keras_preprocessing.image import ImageDataGenerator
 
 import os
+import pickle
 
 
 class Perceptron:
@@ -12,17 +13,17 @@ class Perceptron:
         self.input_height = input_height
 
         self.model = Sequential([
-            Dense(first_hidden_size, input_dim=input_width * input_height * 3),
-            Activation('sigmoid'),
-            Dense(second_hidden_size),
-            Activation('sigmoid'),
-            Softmax(classes)
+            Flatten(input_shape=(input_width, input_height, 3)),
+            Dense(first_hidden_size, activation='sigmoid', input_shape=(input_width, input_height, 3)),
+            Dense(second_hidden_size, activation='sigmoid'),
+            Dense(classes, activation='softmax')
         ])
 
         self.model.compile(loss='mean_squared_error',
                            optimizer='Adam',
                            metrics=['accuracy'])
         print_summary(self.model)
+        self.history = {}
 
     def train(self, training_frame, validation_frame, batch_size, epochs, data_dir):
         img_generator = ImageDataGenerator(rescale=1./255.)
@@ -32,8 +33,8 @@ class Perceptron:
                                                          y_col='class',
                                                          batch_size=batch_size,
                                                          shuffle=True,
-                                                         target_size=(self.input_width, self.input_height))
-        # print(training_set.info())
+                                                         target_size=(self.input_width, self.input_height),
+                                                         class_mode='sparse')
 
         validation_set = img_generator.flow_from_dataframe(dataframe=validation_frame,
                                                            directory=os.path.join(data_dir, 'validation/'),
@@ -41,13 +42,22 @@ class Perceptron:
                                                            y_col='class',
                                                            batch_size=batch_size,
                                                            shuffle=True,
-                                                           target_size=(self.input_width, self.input_height))
-        # print(validation_set.info())
-        STEP_SIZE_TRAIN = training_frame.size // batch_size
-        STEP_SIZE_VALID = validation_frame.size // batch_size
-        self.model.fit_generator(generator=training_set,
-                                 steps_per_epoch=STEP_SIZE_TRAIN,
-                                 validation_data=validation_set,
-                                 validation_steps=STEP_SIZE_VALID,
-                                 epochs=epochs,
-                                 initial_epoch=1)
+                                                           target_size=(self.input_width, self.input_height),
+                                                           class_mode='sparse')
+
+        step_size_training = training_set.n // batch_size
+        step_size_validation = validation_set.n // batch_size
+        self.history = self.model.fit_generator(generator=training_set,
+                                                steps_per_epoch=step_size_training,
+                                                validation_data=validation_set,
+                                                validation_steps=step_size_validation,
+                                                epochs=epochs,
+                                                workers=8)
+    def save(self, model_path, history_path):
+        self.model.save(model_path, overwrite=True)
+        with open(os.path.join(history_path, 'history.pickle'), 'wb') as file_pi:
+            pickle.dump(self.history.history, file_pi)
+
+
+    def load(self, path):
+        self.model.load_weights(path)

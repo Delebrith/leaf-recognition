@@ -2,6 +2,8 @@ import tensorflow as tf
 from src.Perceptron import Perceptron
 import pandas as pd
 
+import os
+
 # ===============DEFINE ARGUMENTS==============
 flags = tf.app.flags
 
@@ -15,9 +17,6 @@ flags.DEFINE_string('validation_data_set', './../validation-data.csv', 'String: 
 flags.DEFINE_string('test_data_set', './../test-data.csv', 'String: Your test dataset')
 
 flags.DEFINE_string('data_dir', './../data', 'String: Directory with your images')
-
-flags.DEFINE_string('model', './../model/perceptron', 'String: Directory where your model data is located '
-                                                      '(or where to create it)')
 
 flags.DEFINE_integer('epochs', 1, 'Int: Number of epochs')
 
@@ -40,14 +39,18 @@ def main():
     if FLAGS.mode not in ['eval', 'train', 'test']:
         raise ValueError('Mode should be specified as one of [use, train, test]')
 
-    perceptron = Perceptron(128, 128, FLAGS.first_layer, FLAGS.second_layer, FLAGS.classes)
+    perceptron = Perceptron(196, 196, FLAGS.first_layer, FLAGS.second_layer, FLAGS.classes)
 
     training_df = pd.read_csv(FLAGS.training_data_set)
     validation_df = pd.read_csv(FLAGS.validation_data_set)
 
-    perceptron.train(training_frame=training_df, validation_frame=validation_df, batch_size=32, epochs=50,
+    perceptron.train(training_frame=training_df, validation_frame=validation_df, batch_size=32, epochs=FLAGS.epochs,
                      data_dir=FLAGS.data_dir)
 
+    perceptron.save(os.path.join(FLAGS.data_dir, 'perceptron-model-%s-%s.hdf5' %
+                                 (FLAGS.first_layer, FLAGS.second_layer)),
+                    os.path.join(FLAGS.data_dir,  'perceptron-history-%s-%s.pickle' %
+                                 (FLAGS.first_layer, FLAGS.second_layer)))
 
 if __name__ == "__main__":
     main()

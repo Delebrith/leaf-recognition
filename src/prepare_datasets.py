@@ -41,7 +41,6 @@ def main():
         raise ValueError('data_src is not a directory')
 
     image_files, classes = get_files_in_classes(FLAGS.data_src)
-    class_ids_dict = dict(zip(classes, range(len(classes))))
     print('Total images: %d' % len(image_files))
 
     validation_index = int(FLAGS.validation_set_size * len(image_files))
@@ -53,13 +52,9 @@ def main():
     test_files = image_files[validation_index:test_index]
     training_files = image_files[test_index:]
 
-    timestamp = datetime.datetime.now().isoformat()
-    # _prepare_tfrecord('training', training_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
-    # _prepare_tfrecord('test', test_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
-    # _prepare_tfrecord('validation', validation_files, class_ids_dict, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
-    _prepare_dataframe('training', training_files, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
-    _prepare_dataframe('test', test_files, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
-    _prepare_dataframe('validation', validation_files, FLAGS.data_src, FLAGS.tfrecord_file, timestamp)
+    _prepare_dataframe('training', training_files, FLAGS.data_src, FLAGS.tfrecord_file)
+    _prepare_dataframe('test', test_files, FLAGS.data_src, FLAGS.tfrecord_file)
+    _prepare_dataframe('validation', validation_files, FLAGS.data_src, FLAGS.tfrecord_file)
 
 def _read_image(path):
     image = cv2.imread(path)
@@ -76,30 +71,7 @@ def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
-def _prepare_tfrecord(type, files, class_dict, data_src, tfrecord_filename, timestamp):
-    assert type in ['training', 'validation', 'test']
-
-    filename = os.path.join(data_src, '%s-%s.tfrecord' % (
-        type, tfrecord_filename
-    ))
-    writer = tf.python_io.TFRecordWriter(filename)
-
-    for i in range(0, len(files)):
-        print('Including image %d/%d into %s dataset' % (i+1, len(files), type))
-        sys.stdout.flush()
-
-        image = _read_image(files[i])
-        classname = os.path.basename(os.path.dirname(files[i]))
-        feature = {'class_id': _int64_feature(class_dict[classname]),
-                   'data': _bytes_feature(tf.compat.as_bytes(np.array2string(image)))}
-        example = tf.train.Example(features=tf.train.Features(feature=feature))
-
-        writer.write(example.SerializeToString())
-
-    writer.close()
-
-
-def _prepare_dataframe(type, files, data_src, tfrecord_filename, timestamp):
+def _prepare_dataframe(type, files, data_src, tfrecord_filename):
     assert type in ['training', 'validation', 'test']
 
     output_filename = os.path.join(data_src, '%s-%s.csv' % (
