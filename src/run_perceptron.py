@@ -49,8 +49,9 @@ def main():
 
     perceptron.save(os.path.join(FLAGS.data_dir, 'perceptron-model-%s-%s.hdf5' %
                                  (FLAGS.first_layer, FLAGS.second_layer)),
-                    os.path.join(FLAGS.data_dir,  'perceptron-history-%s-%s.pickle' %
+                    os.path.join(FLAGS.data_dir,  'perceptron-history-%s-%s.csv' %
                                  (FLAGS.first_layer, FLAGS.second_layer)))
+
 
 if __name__ == "__main__":
     main()

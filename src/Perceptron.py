@@ -2,9 +2,9 @@ from keras.models import Sequential
 from keras.layers import Dense, Flatten
 from keras.utils import print_summary
 from keras_preprocessing.image import ImageDataGenerator
+import pandas as pd
 
 import os
-import pickle
 
 
 class Perceptron:
@@ -14,7 +14,7 @@ class Perceptron:
 
         self.model = Sequential([
             Flatten(input_shape=(input_width, input_height, 3)),
-            Dense(first_hidden_size, activation='sigmoid', input_shape=(input_width, input_height, 3)),
+            Dense(first_hidden_size, activation='sigmoid'),
             Dense(second_hidden_size, activation='sigmoid'),
             Dense(classes, activation='softmax')
         ])
@@ -26,7 +26,13 @@ class Perceptron:
         self.history = {}
 
     def train(self, training_frame, validation_frame, batch_size, epochs, data_dir):
-        img_generator = ImageDataGenerator(rescale=1./255.)
+        img_generator = ImageDataGenerator(rescale=1./255.,
+                                           rotation_range=20,
+                                           horizontal_flip=True,
+                                           width_shift_range=20,
+                                           height_shift_range=20,
+                                           zoom_range=0.1)
+
         training_set = img_generator.flow_from_dataframe(dataframe=training_frame,
                                                          directory=os.path.join(data_dir, 'training/'),
                                                          x_col='data',
@@ -53,11 +59,11 @@ class Perceptron:
                                                 validation_steps=step_size_validation,
                                                 epochs=epochs,
                                                 workers=8)
+
     def save(self, model_path, history_path):
         self.model.save(model_path, overwrite=True)
-        with open(os.path.join(history_path, 'history.pickle'), 'wb') as file_pi:
-            pickle.dump(self.history.history, file_pi)
-
+        history_frame = pd.DataFrame.from_dict(self.history.history)
+        history_frame.to_csv(history_path)
 
     def load(self, path):
         self.model.load_weights(path)
