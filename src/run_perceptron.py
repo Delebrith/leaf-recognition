@@ -26,8 +26,6 @@ flags.DEFINE_integer('first_layer', 1024, 'Int: Number of neurons in 1st hidden 
 
 flags.DEFINE_integer('second_layer', 128, 'Int: Number of neurons in 2nd hidden layer')
 
-# Seed for repeatability.
-flags.DEFINE_integer('random_seed', 0, 'Int: Random seed to use for repeatability.')
 
 FLAGS = flags.FLAGS
 
