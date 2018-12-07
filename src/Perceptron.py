@@ -19,7 +19,7 @@ class Perceptron:
             Dense(classes, activation='softmax')
         ])
 
-        self.model.compile(loss='mean_squared_error',
+        self.model.compile(loss='sparse_categorical_crossentropy',
                            optimizer='Adam',
                            metrics=['accuracy'])
         print_summary(self.model)
@@ -27,10 +27,10 @@ class Perceptron:
 
     def train(self, training_frame, validation_frame, batch_size, epochs, data_dir):
         img_generator = ImageDataGenerator(rescale=1./255.,
-                                           rotation_range=20,
+                                           rotation_range=15,
                                            horizontal_flip=True,
-                                           width_shift_range=20,
-                                           height_shift_range=20,
+                                           width_shift_range=15,
+                                           height_shift_range=15,
                                            zoom_range=0.1)
 
         training_set = img_generator.flow_from_dataframe(dataframe=training_frame,
@@ -58,7 +58,7 @@ class Perceptron:
                                                 validation_data=validation_set,
                                                 validation_steps=step_size_validation,
                                                 epochs=epochs,
-                                                workers=8)
+                                                workers=4)
 
     def save(self, model_path, history_path):
         self.model.save(model_path, overwrite=True)
