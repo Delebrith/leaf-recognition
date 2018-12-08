@@ -16,10 +16,10 @@ class Perceptron:
             Flatten(input_shape=(input_width, input_height, 3)),
             Dense(first_hidden_size, activation='sigmoid'),
             Dense(second_hidden_size, activation='sigmoid'),
-            Dense(classes, activation='softmax')
+            Dense(classes, activation='relu')
         ])
 
-        self.model.compile(loss='sparse_categorical_crossentropy',
+        self.model.compile(loss='categorical_crossentropy',
                            optimizer='Adam',
                            metrics=['accuracy'])
         print_summary(self.model)
@@ -40,7 +40,7 @@ class Perceptron:
                                                          batch_size=batch_size,
                                                          shuffle=True,
                                                          target_size=(self.input_width, self.input_height),
-                                                         class_mode='sparse')
+                                                         class_mode='categorical')
 
         validation_set = img_generator.flow_from_dataframe(dataframe=validation_frame,
                                                            directory=os.path.join(data_dir, 'validation/'),
@@ -49,16 +49,38 @@ class Perceptron:
                                                            batch_size=batch_size,
                                                            shuffle=True,
                                                            target_size=(self.input_width, self.input_height),
-                                                           class_mode='sparse')
+                                                           class_mode='categorical')
 
-        step_size_training = training_set.n // batch_size
-        step_size_validation = validation_set.n // batch_size
+        steps_training = training_set.n // batch_size
+        steps_validation = validation_set.n // batch_size
         self.history = self.model.fit_generator(generator=training_set,
-                                                steps_per_epoch=step_size_training,
+                                                steps_per_epoch=steps_training,
                                                 validation_data=validation_set,
-                                                validation_steps=step_size_validation,
+                                                validation_steps=steps_validation,
                                                 epochs=epochs,
-                                                workers=4)
+                                                workers=8)
+
+    def evaluate(self, test_frame, data_dir, batch_size):
+        data_generator = ImageDataGenerator(rescale=1./255.,
+                                            rotation_range=15,
+                                            horizontal_flip=True,
+                                            width_shift_range=15,
+                                            height_shift_range=15,
+                                            zoom_range=0.1)
+
+        test_set = data_generator.flow_from_dataframe(dataframe=test_frame,
+                                                      directory=os.path.join(data_dir, 'test/'),
+                                                      x_col='data',
+                                                      y_col='class',
+                                                      batch_size=batch_size,
+                                                      shuffle=False,
+                                                      target_size=(self.input_width, self.input_height),
+                                                      class_mode='categorical')
+
+        steps_eval = test_set.n // batch_size
+        result = self.model.evaluate_generator(generator=test_set,
+                                               steps=steps_eval)
+        print('Networks score -  loss: %d; accuracy: %d' % (result[0], result[1]))
 
     def save(self, model_path, history_path):
         self.model.save(model_path, overwrite=True)

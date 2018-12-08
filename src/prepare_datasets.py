@@ -1,11 +1,9 @@
 import random
 import os
-import datetime
 import sys
 
 import tensorflow as tf
 import cv2
-import numpy as np
 import pandas as pd
 from src.file_utils import get_files_in_classes
 
@@ -22,7 +20,7 @@ flags.DEFINE_float('test_set_size', 0.2, 'Float: The proportion of examples in t
 # Seed for repeatability.
 flags.DEFINE_integer('random_seed', 0, 'Int: Random seed to use for repeatability.')
 
-flags.DEFINE_string('tfrecord_file', 'data', 'String: The base of output filename to name your TFRecord file. '
+flags.DEFINE_string('output_filename', 'data', 'String: The base of output filename to name your TFRecord file. '
                                              'You\'ll find your datasets in data_src directory.')
 
 FLAGS = flags.FLAGS
@@ -30,8 +28,8 @@ FLAGS = flags.FLAGS
 
 def main():
 
-    if not FLAGS.tfrecord_file:
-        raise ValueError('tfrecord filename not given')
+    if not FLAGS.output_filename:
+        raise ValueError('output_filename filename not given')
     if not FLAGS.data_src:
         raise ValueError('data_src not given')
 
@@ -52,30 +50,16 @@ def main():
     test_files = image_files[validation_index:test_index]
     training_files = image_files[test_index:]
 
-    _prepare_dataframe('training', training_files, FLAGS.data_src, FLAGS.tfrecord_file)
-    _prepare_dataframe('test', test_files, FLAGS.data_src, FLAGS.tfrecord_file)
-    _prepare_dataframe('validation', validation_files, FLAGS.data_src, FLAGS.tfrecord_file)
-
-def _read_image(path):
-    image = cv2.imread(path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = image.astype(np.float32)
-    return image
+    _prepare_dataframe('training', training_files, FLAGS.data_src, FLAGS.output_filename)
+    _prepare_dataframe('test', test_files, FLAGS.data_src, FLAGS.output_filename)
+    _prepare_dataframe('validation', validation_files, FLAGS.data_src, FLAGS.output_filename)
 
 
-def _int64_feature(value):
-    return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
-
-
-def _bytes_feature(value):
-    return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
-
-
-def _prepare_dataframe(type, files, data_src, tfrecord_filename):
+def _prepare_dataframe(type, files, data_src, output_filename):
     assert type in ['training', 'validation', 'test']
 
     output_filename = os.path.join(data_src, '%s-%s.csv' % (
-        type, tfrecord_filename
+        type, output_filename
     ))
     df = pd.DataFrame([], columns=['data', 'class'])
 

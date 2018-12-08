@@ -41,9 +41,12 @@ def main():
 
     training_df = pd.read_csv(FLAGS.training_data_set)
     validation_df = pd.read_csv(FLAGS.validation_data_set)
+    test_df = pd.read_csv(FLAGS.test_data_set)
 
     perceptron.train(training_frame=training_df, validation_frame=validation_df, batch_size=32, epochs=FLAGS.epochs,
                      data_dir=FLAGS.data_dir)
+
+    perceptron.evaluate(test_frame=test_df, data_dir=FLAGS.data_dir, batch_size=32)
 
     perceptron.save(os.path.join(FLAGS.data_dir, 'perceptron-model-%s-%s.hdf5' %
                                  (FLAGS.first_layer, FLAGS.second_layer)),
