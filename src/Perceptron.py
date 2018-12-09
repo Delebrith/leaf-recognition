@@ -16,7 +16,7 @@ class Perceptron:
             Flatten(input_shape=(input_width, input_height, 3)),
             Dense(first_hidden_size, activation='sigmoid'),
             Dense(second_hidden_size, activation='sigmoid'),
-            Dense(classes, activation='relu')
+            Dense(classes, activation='softmax')
         ])
 
         self.model.compile(loss='categorical_crossentropy',
