@@ -22,9 +22,15 @@ flags.DEFINE_integer('epochs', 1, 'Int: Number of epochs')
 
 flags.DEFINE_integer('classes', 1, 'Int: Number of classes')
 
-flags.DEFINE_integer('first_layer', 1024, 'Int: Number of neurons in 1st hidden layer')
+flags.DEFINE_integer('first_layer', 256, 'Int: Number of neurons in 1st hidden layer')
 
 flags.DEFINE_integer('second_layer', 128, 'Int: Number of neurons in 2nd hidden layer')
+
+flags.DEFINE_integer('third_layer', 64, 'Int: Number of neurons in 3nd hidden layer')
+
+flags.DEFINE_integer('input_width', 64, 'Int: Number of neurons in 2nd hidden layer')
+
+flags.DEFINE_integer('input_height', 128, 'Int: Number of neurons in 3nd hidden layer')
 
 
 FLAGS = flags.FLAGS
@@ -37,7 +43,7 @@ def main():
     if FLAGS.mode not in ['eval', 'train', 'test']:
         raise ValueError('Mode should be specified as one of [use, train, test]')
 
-    perceptron = Perceptron(196, 196, FLAGS.first_layer, FLAGS.second_layer, FLAGS.classes)
+    perceptron = Perceptron(FLAGS.input_width, FLAGS.input_height, FLAGS.first_layer, FLAGS.second_layer, FLAGS.third_layer, FLAGS.classes)
 
     training_df = pd.read_csv(FLAGS.training_data_set)
     validation_df = pd.read_csv(FLAGS.validation_data_set)
@@ -48,10 +54,12 @@ def main():
 
     perceptron.evaluate(test_frame=test_df, data_dir=FLAGS.data_dir, batch_size=32)
 
-    perceptron.save(os.path.join(FLAGS.data_dir, 'perceptron-model-%s-%s.hdf5' %
-                                 (FLAGS.first_layer, FLAGS.second_layer)),
-                    os.path.join(FLAGS.data_dir,  'perceptron-history-%s-%s.csv' %
-                                 (FLAGS.first_layer, FLAGS.second_layer)))
+    perceptron.save(os.path.join(FLAGS.data_dir, 'perceptron-model-%s-%s-%s-input-%d-%d.hdf5' %
+                                 (FLAGS.first_layer, FLAGS.second_layer, FLAGS.third_layer, FLAGS.input_width,
+                                  FLAGS.input_height)),
+                    os.path.join(FLAGS.data_dir,  'perceptron-history-%s-%s-%s-input-%d-%d.csv' %
+                                 (FLAGS.first_layer, FLAGS.second_layer, FLAGS.third_layer, FLAGS.input_width,
+                                  FLAGS.input_height)))
 
 
 if __name__ == "__main__":

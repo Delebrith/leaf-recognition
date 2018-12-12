@@ -8,14 +8,15 @@ import os
 
 
 class Perceptron:
-    def __init__(self, input_width, input_height, first_hidden_size, second_hidden_size, classes):
+    def __init__(self, input_width, input_height, first_hidden_size, second_hidden_size, third_hidden_size, classes):
         self.input_width = input_width
         self.input_height = input_height
 
         self.model = Sequential([
-            Flatten(input_shape=(input_width, input_height, 3)),
+            Flatten(input_shape=(input_height, input_width, 3)),
             Dense(first_hidden_size, activation='sigmoid'),
             Dense(second_hidden_size, activation='sigmoid'),
+            Dense(third_hidden_size, activation='sigmoid'),
             Dense(classes, activation='softmax')
         ])
 
@@ -29,8 +30,9 @@ class Perceptron:
         img_generator = ImageDataGenerator(rescale=1./255.,
                                            rotation_range=15,
                                            horizontal_flip=True,
-                                           width_shift_range=15,
-                                           height_shift_range=15,
+                                           width_shift_range=0.2,
+                                           height_shift_range=0.2,
+                                           shear_range=0.1,
                                            zoom_range=0.1)
 
         training_set = img_generator.flow_from_dataframe(dataframe=training_frame,
@@ -39,7 +41,7 @@ class Perceptron:
                                                          y_col='class',
                                                          batch_size=batch_size,
                                                          shuffle=True,
-                                                         target_size=(self.input_width, self.input_height),
+                                                         target_size=(self.input_height, self.input_width),
                                                          class_mode='categorical')
 
         validation_set = img_generator.flow_from_dataframe(dataframe=validation_frame,
@@ -48,7 +50,7 @@ class Perceptron:
                                                            y_col='class',
                                                            batch_size=batch_size,
                                                            shuffle=True,
-                                                           target_size=(self.input_width, self.input_height),
+                                                           target_size=(self.input_height, self.input_width),
                                                            class_mode='categorical')
 
         steps_training = training_set.n // batch_size
@@ -74,13 +76,13 @@ class Perceptron:
                                                       y_col='class',
                                                       batch_size=batch_size,
                                                       shuffle=False,
-                                                      target_size=(self.input_width, self.input_height),
+                                                      target_size=(self.input_height, self.input_width),
                                                       class_mode='categorical')
 
         steps_eval = test_set.n // batch_size
         result = self.model.evaluate_generator(generator=test_set,
                                                steps=steps_eval)
-        print('Networks score -  loss: %d; accuracy: %d' % (result[0], result[1]))
+        print('Networks score -  loss: {}; accuracy: {}'.format(result[0], result[1]))
 
     def save(self, model_path, history_path):
         self.model.save(model_path, overwrite=True)
