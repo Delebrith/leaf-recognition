@@ -6,3 +6,4 @@ keras==2.2.4
 pandas
 matplotlib
 pillow
+scikit-learn
