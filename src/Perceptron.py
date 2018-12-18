@@ -66,8 +66,9 @@ class Perceptron:
         data_generator = ImageDataGenerator(rescale=1./255.,
                                             rotation_range=15,
                                             horizontal_flip=True,
-                                            width_shift_range=15,
-                                            height_shift_range=15,
+                                            width_shift_range=0.2,
+                                            height_shift_range=0.2,
+                                            shear_range=0.1,
                                             zoom_range=0.1)
 
         test_set = data_generator.flow_from_dataframe(dataframe=test_frame,
