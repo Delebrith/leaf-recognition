@@ -23,6 +23,8 @@ flags.DEFINE_integer('random_seed', 0, 'Int: Random seed to use for repeatabilit
 flags.DEFINE_string('output_filename', 'data', 'String: The base of output filename to name your TFRecord file. '
                                              'You\'ll find your datasets in data_src directory.')
 
+flags.DEFINE_string('type', 'jpg', 'String: What files are splitted into datasets, jpg or csv')
+
 FLAGS = flags.FLAGS
 
 
@@ -38,6 +40,9 @@ def main():
     if not os.path.isdir(FLAGS.data_src):
         raise ValueError('data_src is not a directory')
 
+    if FLAGS.type not in ['csv', 'jpg']:
+        raise ValueError('type has incorrect value')
+
     image_files, classes = get_files_in_classes(FLAGS.data_src)
     print('Total images: %d' % len(image_files))
 
@@ -50,9 +55,14 @@ def main():
     test_files = image_files[validation_index:test_index]
     training_files = image_files[test_index:]
 
-    _prepare_dataframe('training', training_files, FLAGS.data_src, FLAGS.output_filename)
-    _prepare_dataframe('test', test_files, FLAGS.data_src, FLAGS.output_filename)
-    _prepare_dataframe('validation', validation_files, FLAGS.data_src, FLAGS.output_filename)
+    if FLAGS.type == 'jpg':
+        _prepare_dataframe('training', training_files, FLAGS.data_src, FLAGS.output_filename)
+        _prepare_dataframe('test', test_files, FLAGS.data_src, FLAGS.output_filename)
+        _prepare_dataframe('validation', validation_files, FLAGS.data_src, FLAGS.output_filename)
+    else:
+        _prepare_csv_dataframe('training', training_files, FLAGS.data_src, FLAGS.output_filename)
+        _prepare_csv_dataframe('test', test_files, FLAGS.data_src, FLAGS.output_filename)
+        _prepare_csv_dataframe('validation', validation_files, FLAGS.data_src, FLAGS.output_filename)
 
 
 def _prepare_dataframe(type, files, data_src, output_filename):
@@ -80,6 +90,37 @@ def _prepare_dataframe(type, files, data_src, output_filename):
 
         df = df.append({'data': filename,
                         'class': classname}, ignore_index=True)
+
+    df.to_csv(output_filename, index=False)
+
+
+def _prepare_csv_dataframe(type, files, data_src, output_filename):
+    assert type in ['training', 'validation', 'test']
+
+    output_filename = os.path.join(data_src, '%s-%s.csv' % (
+        type, output_filename
+    ))
+    df = pd.DataFrame([], columns=['file', 'class'])
+
+
+    inner_dir = os.listdir(FLAGS.data_src)[0]
+    inner_dir = os.path.join(data_src, inner_dir)
+    classes = os.listdir(inner_dir)
+
+    for i in range(0, len(files)):
+        print('Including image %d/%d into %s dataset' % (i+1, len(files), type))
+        sys.stdout.flush()
+
+        classname = os.path.basename(os.path.dirname(files[i]))
+
+        filename = os.path.join(classname, os.path.basename(files[i]))
+
+        class_id = classes.index(classname)
+
+        df = df.append({'file': filename,
+                        'class': classname,
+                        'class_id': class_id},
+                       ignore_index=True)
 
     df.to_csv(output_filename, index=False)
 
