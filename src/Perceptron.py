@@ -3,6 +3,8 @@ from keras.layers import Dense, Flatten
 from keras.utils import print_summary
 from keras_preprocessing.image import ImageDataGenerator
 import pandas as pd
+from sklearn.metrics import roc_curve
+import numpy as np
 
 import os
 
@@ -11,6 +13,7 @@ class Perceptron:
     def __init__(self, input_width, input_height, first_hidden_size, second_hidden_size, third_hidden_size, classes):
         self.input_width = input_width
         self.input_height = input_height
+        self.classes = classes
 
         self.model = Sequential([
             Flatten(input_shape=(input_height, input_width, 3)),
@@ -92,3 +95,30 @@ class Perceptron:
 
     def load(self, path):
         self.model.load_weights(path)
+
+    def draw_roc(self, test_frame, data_dir):
+        data_generator = ImageDataGenerator(rescale=1./255.,
+                                            rotation_range=15,
+                                            horizontal_flip=True,
+                                            width_shift_range=0.2,
+                                            height_shift_range=0.2,
+                                            shear_range=0.1,
+                                            zoom_range=0.1)
+
+        test_set = data_generator.flow_from_dataframe(dataframe=test_frame,
+                                                      directory=os.path.join(data_dir, 'test/'),
+                                                      x_col='data',
+                                                      y_col='class',
+                                                      batch_size=32,
+                                                      shuffle=False,
+                                                      target_size=(self.input_height, self.input_width),
+                                                      class_mode='categorical')
+        steps_eval = test_set.n // 32
+        predicted_y = self.model.predict_generator(generator=test_set,
+                                                   steps=steps_eval).ravel()
+        test_set.reset()
+        test_y = test_set.next()[1]
+        for _ in range(steps_eval - 1):
+            test_y = np.append(arr=test_y, values=test_set.next()[1])
+        fpr, tpr, _ = roc_curve(test_y, predicted_y)
+        return fpr, tpr

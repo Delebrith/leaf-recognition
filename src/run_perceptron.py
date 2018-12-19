@@ -87,6 +87,7 @@ def main():
                                      (FLAGS.first_layer, FLAGS.second_layer, FLAGS.third_layer, FLAGS.input_width,
                                       FLAGS.input_height)))
 
+
 if __name__ == "__main__":
     main()
 

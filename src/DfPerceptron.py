@@ -1,8 +1,13 @@
+from itertools import cycle
+
 from keras.models import Sequential
 from keras.layers import Dense, Flatten
 from keras.utils import print_summary
 import pandas as pd
 import numpy as np
+from scipy.interpolate import UnivariateSpline
+from sklearn.metrics import roc_curve, auc
+import matplotlib.pyplot as plt
 
 import os
 
@@ -90,3 +95,21 @@ class DfPerceptron:
         array[int(class_id)] = 1.0
         return array
 
+    def draw_roc(self, test_frame, data_dir):
+        test_x = []
+        test_y = []
+        for record in test_frame.iterrows():
+            image = pd.read_csv(os.path.join(data_dir + '/Folio', record[1]['file']),
+                                usecols=['angle', 'octave', 'x', 'y', 'response', 'size']).values
+            category = np.array(self.to_categorical(record[1]['class_id']))
+            test_x = np.append(arr=test_x, values=image)
+            test_y = np.append(arr=test_y, values=category)
+
+        test_x = test_x.reshape((test_frame.size // 3, 1000, 6))
+        test_y = test_y.reshape((test_frame.size // 3, self.classes))
+        #
+        predicted_y = self.model.predict(test_x).ravel()
+        test_y = test_y.reshape(test_frame.size // 3 * self.classes, 1)
+
+        fpr, tpr, _ = roc_curve(test_y, predicted_y)
+        return fpr, tpr
