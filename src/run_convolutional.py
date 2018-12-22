@@ -62,12 +62,12 @@ def main():
         augmentation = True if FLAGS.augmentation == 'Yes' else False
         conv.train(training_frame=training_frame, validation_frame=validation_frame, batch_size=FLAGS.batch_size,
                    epochs=FLAGS.epochs, data_dir=FLAGS.data_dir, augmentation=augmentation)
-        conv.save(os.path.join(FLAGS.data_dir, "%s-model-%d-%d-%d-%d-%d-%s-%9.8f.hdf5") %
+        conv.save(os.path.join(FLAGS.data_dir, "%s-model-%d-%d-%d-%d-%d-%s-%s.hdf5" %
                   (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
-                   FLAGS.batch_size, FLAGS.regularization, FLAGS.lr),
-                  os.path.join(FLAGS.data_dir, "%s-history-%d-%d-%d-%d-%d-%s-%9.8f.csv") %
+                   FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr))),
+                  os.path.join(FLAGS.data_dir, "%s-history-%d-%d-%d-%d-%d-%s-%s.csv" %
                   (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
-                   FLAGS.batch_size, FLAGS.regularization, FLAGS.regularization, FLAGS.lr))
+                   FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr))))
 
     test_frame = pd.read_csv(os.path.join(FLAGS.data_dir, "test-leafs.csv"))
     conv.evaluate(test_frame=test_frame, data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
