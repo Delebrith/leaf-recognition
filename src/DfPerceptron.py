@@ -1,22 +1,17 @@
-from itertools import cycle
-
 from keras.models import Sequential
 from keras.layers import Dense, Flatten
 from keras.utils import print_summary
 import pandas as pd
 import numpy as np
-from scipy.interpolate import UnivariateSpline
 from sklearn.metrics import roc_curve, auc
-import matplotlib.pyplot as plt
+from src.NeuralNetwork import NeuralNetwork
 
 import os
 
 
-class DfPerceptron:
+class DfPerceptron(NeuralNetwork):
     def __init__(self, first_hidden_size, second_hidden_size, third_hidden_size, classes):
-        self.input_width = 6
-        self.input_height = 1000
-        self.classes = classes
+        NeuralNetwork.__init__(self, 6, 1000, 32)
 
         self.model = Sequential([
             Flatten(input_shape=(self.input_height, self.input_width)),
