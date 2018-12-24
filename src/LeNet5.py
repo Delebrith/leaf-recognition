@@ -21,15 +21,15 @@ class LeNet5(NeuralNetwork):
         self.model = Sequential([
             InputLayer(input_shape=(input_height, input_width, 3)),
 
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=filters, kernel_size=(filter_size, filter_size), padding='same',
                    kernel_regularizer=regularization, activation='relu',
                    kernel_initializer=initializer, bias_initializer=initializer),
 
 
             MaxPooling2D(pool_size=(2, 2), data_format='channels_last'),
 
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=2*filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu',
+            Conv2D(data_format='channels_last', filters=filters, kernel_size=(2*filter_size, 2*filter_size),
+                   padding='same', kernel_regularizer=regularization, activation='relu',
                    kernel_initializer=initializer, bias_initializer=initializer),
 
             MaxPooling2D(pool_size=(2, 2), strides=(2, 2), data_format='channels_last'),
@@ -52,26 +52,32 @@ class LeNet5(NeuralNetwork):
 
     def train(self, training_frame, validation_frame, batch_size, epochs, data_dir, augmentation=False):
         if augmentation:
-            img_generator = ImageDataGenerator(rescale=1./255.,
+            train_generator = ImageDataGenerator(rescale=1./255.,
+                                                 rotation_range=15,
+                                                 horizontal_flip=True,
+                                                 width_shift_range=15.0,
+                                                 height_shift_range=10.0,
+                                                 zoom_range=0.10)
+            val_generator = ImageDataGenerator(rescale=1. / 255.,
                                                rotation_range=15,
                                                horizontal_flip=True,
-                                               width_shift_range=0.15,
-                                               height_shift_range=0.15,
-                                               shear_range=10,
-                                               zoom_range=0.1)
+                                               width_shift_range=15.0,
+                                               height_shift_range=10.0,
+                                               zoom_range=0.10)
         else:
-            img_generator = ImageDataGenerator(rescale=1./255.)
+            train_generator = ImageDataGenerator(rescale=1./255.)
+            val_generator = ImageDataGenerator(rescale=1./255.)
 
-        training_set = img_generator.flow_from_dataframe(dataframe=training_frame,
-                                                         directory=os.path.join(data_dir, 'training/'),
-                                                         x_col='data',
-                                                         y_col='class',
-                                                         batch_size=batch_size,
-                                                         shuffle=True,
-                                                         target_size=(self.input_height, self.input_width),
-                                                         class_mode='categorical')
+        training_set = train_generator.flow_from_dataframe(dataframe=training_frame,
+                                                           directory=os.path.join(data_dir, 'training/'),
+                                                           x_col='data',
+                                                           y_col='class',
+                                                           batch_size=batch_size,
+                                                           shuffle=True,
+                                                           target_size=(self.input_height, self.input_width),
+                                                           class_mode='categorical')
 
-        validation_set = img_generator.flow_from_dataframe(dataframe=validation_frame,
+        validation_set = val_generator.flow_from_dataframe(dataframe=validation_frame,
                                                            directory=os.path.join(data_dir, 'validation/'),
                                                            x_col='data',
                                                            y_col='class',
@@ -83,7 +89,7 @@ class LeNet5(NeuralNetwork):
         steps_training = training_set.n // batch_size
         steps_validation = validation_set.n // batch_size
 
-        early_stopping = EarlyStopping(min_delta=0.01, patience=5, restore_best_weights=True)
+        early_stopping = EarlyStopping(min_delta=0.01, patience=10, restore_best_weights=True)
 
         self.history = self.model.fit_generator(generator=training_set,
                                                 steps_per_epoch=steps_training,
@@ -151,3 +157,4 @@ class LeNet5(NeuralNetwork):
             test_y = np.append(arr=test_y, values=test_set.next()[1]).reshape(((i+2) * batch_size, self.classes))
         top5 = top_k_categorical_accuracy(test_y, predicted_y, 5)
         print("Top-5: {}", top5)
+

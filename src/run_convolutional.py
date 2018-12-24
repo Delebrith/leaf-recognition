@@ -33,7 +33,7 @@ flags.DEFINE_string('regularization', 'None', 'String: method of regularization'
 
 flags.DEFINE_string('augmentation', 'No', 'String: is data augmentation on')
 
-flags.DEFINE_string('type', 'lenet', 'String: typr of neural network')
+flags.DEFINE_string('type', 'lenet', 'String: type of neural network')
 
 flags.DEFINE_float('lr', 0.001, 'Float: learning rate')
 
@@ -41,10 +41,6 @@ FLAGS = flags.FLAGS
 
 
 def main():
-    print(backend.tensorflow_backend._get_available_gpus())
-    config = tf.ConfigProto(device_count={'GPU': 1, 'CPU': 4})
-    sess = tf.Session(config=config)
-    backend.set_session(sess)
 
     if FLAGS.type == 'lenet':
         conv = LeNet5(FLAGS.input_width, FLAGS.input_height, FLAGS.classes, FLAGS.filter_size, FLAGS.filters,
@@ -71,7 +67,6 @@ def main():
 
     test_frame = pd.read_csv(os.path.join(FLAGS.data_dir, "test-leafs.csv"))
     conv.evaluate(test_frame=test_frame, data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
-    conv.top5(test_frame, FLAGS.data_dir, FLAGS.batch_size)
 
 
 if __name__ == "__main__":

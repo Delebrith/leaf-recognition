@@ -93,26 +93,32 @@ class VGG16(NeuralNetwork):
 
     def train(self, training_frame, validation_frame, batch_size, epochs, data_dir, augmentation=False):
         if augmentation:
-            img_generator = ImageDataGenerator(rescale=1./255.,
+            train_generator = ImageDataGenerator(rescale=1./255.,
+                                                 rotation_range=15,
+                                                 horizontal_flip=True,
+                                                 width_shift_range=15.0,
+                                                 height_shift_range=10.0,
+                                                 zoom_range=0.10)
+            val_generator = ImageDataGenerator(rescale=1. / 255.,
                                                rotation_range=15,
                                                horizontal_flip=True,
-                                               width_shift_range=0.15,
-                                               height_shift_range=0.15,
-                                               shear_range=10,
-                                               zoom_range=0.1)
+                                               width_shift_range=15.0,
+                                               height_shift_range=10.0,
+                                               zoom_range=0.10)
         else:
-            img_generator = ImageDataGenerator(rescale=1./255.)
+            train_generator = ImageDataGenerator(rescale=1./255.)
+            val_generator = ImageDataGenerator(rescale=1./255.)
 
-        training_set = img_generator.flow_from_dataframe(dataframe=training_frame,
-                                                         directory=os.path.join(data_dir, 'training/'),
-                                                         x_col='data',
-                                                         y_col='class',
-                                                         batch_size=batch_size,
-                                                         shuffle=True,
-                                                         target_size=(self.input_height, self.input_width),
-                                                         class_mode='categorical')
+        training_set = train_generator.flow_from_dataframe(dataframe=training_frame,
+                                                           directory=os.path.join(data_dir, 'training/'),
+                                                           x_col='data',
+                                                           y_col='class',
+                                                           batch_size=batch_size,
+                                                           shuffle=True,
+                                                           target_size=(self.input_height, self.input_width),
+                                                           class_mode='categorical')
 
-        validation_set = img_generator.flow_from_dataframe(dataframe=validation_frame,
+        validation_set = val_generator.flow_from_dataframe(dataframe=validation_frame,
                                                            directory=os.path.join(data_dir, 'validation/'),
                                                            x_col='data',
                                                            y_col='class',
