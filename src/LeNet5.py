@@ -28,7 +28,7 @@ class LeNet5(NeuralNetwork):
 
             MaxPooling2D(pool_size=(2, 2), data_format='channels_last'),
 
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=(2*filter_size, 2*filter_size),
+            Conv2D(data_format='channels_last', filters=2*filters, kernel_size=(filter_size, filter_size),
                    padding='same', kernel_regularizer=regularization, activation='relu',
                    kernel_initializer=initializer, bias_initializer=initializer),
 

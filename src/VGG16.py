@@ -6,7 +6,7 @@ from keras_preprocessing.image import ImageDataGenerator
 from keras.metrics import top_k_categorical_accuracy
 from keras.initializers import RandomNormal, RandomUniform
 from keras.callbacks import EarlyStopping
-from keras.optimizers import Adam, RMSprop
+from keras.optimizers import Adam, RMSprop, SGD
 from sklearn.metrics import roc_curve
 import numpy as np
 
@@ -16,7 +16,7 @@ import os
 class VGG16(NeuralNetwork):
     def __init__(self, input_width, input_height, classes, filter_size, filters, regularization, learning_rate):
         NeuralNetwork.__init__(self, input_width, input_height, classes)
-        initializer = RandomUniform(seed=1)
+        initializer = RandomNormal(seed=1, mean=0.0)
 
         self.model = Sequential([
             InputLayer(input_shape=(input_height, input_width, 3)),
@@ -30,46 +30,46 @@ class VGG16(NeuralNetwork):
             MaxPooling2D(name='block_1_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 2
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=2*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=2*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_2_1',
                    kernel_initializer=initializer, bias_initializer=initializer),
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=2*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=2*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_2_2',
                    kernel_initializer=initializer, bias_initializer=initializer),
             MaxPooling2D(name='block_2_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 3
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=4*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=4*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_3_1',
                    kernel_initializer=initializer, bias_initializer=initializer),
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=4*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=4*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_3_2',
                    kernel_initializer=initializer, bias_initializer=initializer),
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=4*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=4*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_3_3',
                    kernel_initializer=initializer, bias_initializer=initializer),
             MaxPooling2D(name='block_3_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 4
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=8*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_4_1',
                    kernel_initializer=initializer, bias_initializer=initializer),
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=8*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_4_2',
                    kernel_initializer=initializer, bias_initializer=initializer),
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=8*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_4_3',
                    kernel_initializer=initializer, bias_initializer=initializer),
             MaxPooling2D(name='block_4_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 5
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=8*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_5_1',
                    kernel_initializer=initializer, bias_initializer=initializer),
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=8*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_5_2',
                    kernel_initializer=initializer, bias_initializer=initializer),
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=8*filter_size, padding='same',
+            Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_5_3',
                    kernel_initializer=initializer, bias_initializer=initializer),
             MaxPooling2D(name='block_5_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
@@ -85,26 +85,31 @@ class VGG16(NeuralNetwork):
 
         adam = Adam(lr=learning_rate)
         rmsprop = RMSprop(lr=learning_rate)
+        sgd = SGD(lr=learning_rate, momentum=0.9)
         self.model.compile(loss='categorical_crossentropy',
-                           optimizer=rmsprop,
+                           optimizer=sgd,
                            metrics=['accuracy'])
         print_summary(self.model)
         self.history = {}
 
     def train(self, training_frame, validation_frame, batch_size, epochs, data_dir, augmentation=False):
         if augmentation:
-            train_generator = ImageDataGenerator(rescale=1./255.,
+            train_generator = ImageDataGenerator(rescale=1. / 255.,
                                                  rotation_range=15,
                                                  horizontal_flip=True,
                                                  width_shift_range=15.0,
                                                  height_shift_range=10.0,
-                                                 zoom_range=0.10)
+                                                 zoom_range=0.10,
+                                                 shear_range=0.10,
+                                                 fill_mode='nearest')
             val_generator = ImageDataGenerator(rescale=1. / 255.,
                                                rotation_range=15,
                                                horizontal_flip=True,
                                                width_shift_range=15.0,
                                                height_shift_range=10.0,
-                                               zoom_range=0.10)
+                                               zoom_range=0.10,
+                                               shear_range=0.10,
+                                               fill_mode='nearest')
         else:
             train_generator = ImageDataGenerator(rescale=1./255.)
             val_generator = ImageDataGenerator(rescale=1./255.)
