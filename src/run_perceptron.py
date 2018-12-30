@@ -60,11 +60,11 @@ def main():
                          data_dir=FLAGS.data_dir)
     
         perceptron.evaluate(test_frame=test_df, data_dir=FLAGS.data_dir, batch_size=32)
-    
-        perceptron.save(os.path.join(FLAGS.data_dir, 'perceptron-model-%s-%s-%s-input-%d-%d.hdf5' %
+
+        perceptron.save(os.path.join(FLAGS.data_dir, 'perceptron-model-%s-%s-%s-input-%d-%d-mse-sgd.hdf5' %
                                      (FLAGS.first_layer, FLAGS.second_layer, FLAGS.third_layer, FLAGS.input_width,
                                       FLAGS.input_height)),
-                        os.path.join(FLAGS.data_dir,  'perceptron-history-%s-%s-%s-input-%d-%d.csv' %
+                        os.path.join(FLAGS.data_dir,  'perceptron-history-%s-%s-%s-input-%d-%d-mse-sgd.csv' %
                                      (FLAGS.first_layer, FLAGS.second_layer, FLAGS.third_layer, FLAGS.input_width,
                                       FLAGS.input_height)))
         

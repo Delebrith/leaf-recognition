@@ -6,7 +6,7 @@ from keras_preprocessing.image import ImageDataGenerator
 from keras.metrics import top_k_categorical_accuracy
 from keras.initializers import RandomNormal, RandomUniform
 from keras.callbacks import EarlyStopping
-from keras.optimizers import Adam, RMSprop
+from keras.optimizers import Adam, RMSprop, SGD
 from sklearn.metrics import roc_curve
 import numpy as np
 
@@ -16,7 +16,7 @@ import os
 class LeNet5(NeuralNetwork):
     def __init__(self, input_width, input_height, classes, filter_size, filters, regularization, learning_rate):
         NeuralNetwork.__init__(self, input_width, input_height, classes)
-        initializer = RandomUniform(seed=1)
+        initializer = RandomNormal(seed=1)
 
         self.model = Sequential([
             InputLayer(input_shape=(input_height, input_width, 3)),
@@ -44,8 +44,9 @@ class LeNet5(NeuralNetwork):
 
         adam = Adam(lr=learning_rate)
         rmsprop = RMSprop(lr=learning_rate)
-        self.model.compile(loss='categorical_crossentropy',
-                           optimizer=adam,
+        sgd = SGD(lr=learning_rate, momentum=0.9)
+        self.model.compile(loss='mse',
+                           optimizer=sgd,
                            metrics=['accuracy'])
         print_summary(self.model)
         self.history = {}
@@ -57,13 +58,17 @@ class LeNet5(NeuralNetwork):
                                                  horizontal_flip=True,
                                                  width_shift_range=15.0,
                                                  height_shift_range=10.0,
-                                                 zoom_range=0.10)
+                                                 zoom_range=0.10,
+                                                 shear_range=0.10,
+                                                 fill_mode='nearest')
             val_generator = ImageDataGenerator(rescale=1. / 255.,
                                                rotation_range=15,
                                                horizontal_flip=True,
                                                width_shift_range=15.0,
                                                height_shift_range=10.0,
-                                               zoom_range=0.10)
+                                               zoom_range=0.10,
+                                               shear_range=0.10,
+                                               fill_mode='nearest')
         else:
             train_generator = ImageDataGenerator(rescale=1./255.)
             val_generator = ImageDataGenerator(rescale=1./255.)
