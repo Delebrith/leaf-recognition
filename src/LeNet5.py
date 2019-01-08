@@ -16,22 +16,18 @@ import os
 class LeNet5(NeuralNetwork):
     def __init__(self, input_width, input_height, classes, filter_size, filters, regularization, learning_rate):
         NeuralNetwork.__init__(self, input_width, input_height, classes)
-        kernel_initializer = glorot_uniform(seed=1)
-        bias_initializer = zeros()
 
         self.model = Sequential([
             InputLayer(input_shape=(input_height, input_width, 3)),
 
-            Conv2D(data_format='channels_last', filters=filters, kernel_size=(filter_size, filter_size), padding='valid',
-                   kernel_regularizer=regularization, activation='relu',
-                   kernel_initializer=kernel_initializer, bias_initializer=bias_initializer),
+            Conv2D(data_format='channels_last', filters=filters, kernel_size=(filter_size, filter_size), padding='same',
+                   kernel_regularizer=regularization, activation='relu'),
 
 
             MaxPooling2D(pool_size=2, strides=2, data_format='channels_last'),
 
             Conv2D(data_format='channels_last', filters=2*filters, kernel_size=(filter_size, filter_size),
-                   padding='valid', kernel_regularizer=regularization, activation='relu',
-                   kernel_initializer=kernel_initializer, bias_initializer=bias_initializer),
+                   padding='same', kernel_regularizer=regularization, activation='relu'),
 
             MaxPooling2D(pool_size=2, strides=2, data_format='channels_last'),
 
@@ -45,8 +41,6 @@ class LeNet5(NeuralNetwork):
         ])
 
         adam = Adam(lr=learning_rate)
-        rmsprop = RMSprop(lr=learning_rate)
-        sgd = SGD(lr=learning_rate, momentum=0.99, nesterov=True)
         self.model.compile(loss='categorical_crossentropy',
                            optimizer=adam,
                            metrics=['accuracy'])

@@ -16,89 +16,73 @@ import os
 class VGG16(NeuralNetwork):
     def __init__(self, input_width, input_height, classes, filter_size, filters, regularization, learning_rate):
         NeuralNetwork.__init__(self, input_width, input_height, classes)
-        initializer = RandomNormal(seed=1, mean=0.0)
 
         self.model = Sequential([
             InputLayer(input_shape=(input_height, input_width, 3)),
 
             # block 1
             Conv2D(data_format='channels_last', filters=filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_1_1',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_1_1'),
 
             Conv2D(data_format='channels_last', filters=filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_1_2',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_1_2'),
 
             MaxPooling2D(name='block_1_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 2
             Conv2D(data_format='channels_last', filters=2*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_2_1',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_2_1'),
 
             Conv2D(data_format='channels_last', filters=2*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_2_2',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_2_2'),
 
             MaxPooling2D(name='block_2_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 3
             Conv2D(data_format='channels_last', filters=4*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_3_1',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_3_1'),
 
             Conv2D(data_format='channels_last', filters=4*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_3_2',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_3_2'),
 
             Conv2D(data_format='channels_last', filters=4*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_3_3',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_3_3'),
 
             MaxPooling2D(name='block_3_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 4
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_4_1',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_4_1'),
 
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_4_2',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_4_2'),
 
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_4_3',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_4_3'),
 
             MaxPooling2D(name='block_4_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 5
 
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_5_1',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_5_1'),
 
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_5_2',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_5_2'),
 
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
-                   kernel_regularizer=regularization, activation='relu', name='block_5_3',
-                   kernel_initializer=initializer, bias_initializer=initializer),
+                   kernel_regularizer=regularization, activation='relu', name='block_5_3'),
 
             MaxPooling2D(name='block_5_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # fully_concatenated
             Flatten(),
 
-            Dense(4096, activation='relu', kernel_regularizer=regularization,
-                  kernel_initializer=initializer, bias_initializer=initializer),
+            Dense(4096, activation='relu', kernel_regularizer=regularization),
 
-            Dense(4096, activation='relu', kernel_regularizer=regularization,
-                  kernel_initializer=initializer, bias_initializer=initializer),
+            Dense(4096, activation='relu', kernel_regularizer=regularization),
 
-            Dense(classes, activation='softmax', kernel_initializer=initializer, bias_initializer=initializer)
+            Dense(classes, activation='softmax', kernel_regularizer=regularization)
         ])
 
         adam = Adam(lr=learning_rate)
