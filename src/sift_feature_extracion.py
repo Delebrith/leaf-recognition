@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 
-from src.file_utils import get_files_in_classes
+from src.file_utils import get_files_and_classes
 
 # ===============DEFINE ARGUMENTS==============
 flags = tf.app.flags
@@ -42,7 +42,7 @@ def main():
             or FLAGS.output not in ['jpg', 'csv']:
         raise ValueError('invalid arguments in --colors, --output or --rich_keypoints')
 
-    images, classes = get_files_in_classes(FLAGS.data_src)
+    images, classes = get_files_and_classes(FLAGS.data_src)
     sift_extraction(images, classes, FLAGS.data_dest)
 
 

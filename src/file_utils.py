@@ -1,7 +1,7 @@
 import os
 
 
-def get_files_in_classes(data_src):
+def get_files_and_classes(data_src):
     class_directory = os.listdir(data_src)[0]
     directories = []
     classes = []
@@ -19,3 +19,12 @@ def get_files_in_classes(data_src):
                 images.append(path)
 
     return images, classes
+
+def get_images_in_classes(data_dir):
+    classes = os.listdir(data_dir)
+    images_classes = {}
+    for c in classes:
+        files = os.listdir(os.path.join(data_dir, c))
+        images_classes[c] = files
+
+    return images_classes
