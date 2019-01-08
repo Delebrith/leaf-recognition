@@ -13,7 +13,7 @@ flags = tf.app.flags
 flags.DEFINE_string('mode', 'eval', 'String: Training (training and validation set), '
                                     'testing (test set) or usage(single picture) mode')
 
-flags.DEFINE_string('data_dir', './../data', 'String: Directory with your images')
+flags.DEFINE_string('data_dir', './../data/sets', 'String: Directory with your images')
 
 flags.DEFINE_integer('epochs', 1, 'Int: Number of epochs')
 
@@ -52,21 +52,31 @@ def main():
         raise ValueError('Invalid network type!')
 
     if FLAGS.mode == 'train':
-        training_frame = pd.read_csv(os.path.join(FLAGS.data_dir, "training-leafs.csv"))
-        validation_frame = pd.read_csv(os.path.join(FLAGS.data_dir, "validation-leafs.csv"))
-
         augmentation = True if FLAGS.augmentation == 'Yes' else False
-        conv.train(training_frame=training_frame, validation_frame=validation_frame, batch_size=FLAGS.batch_size,
-                   epochs=FLAGS.epochs, data_dir=FLAGS.data_dir, augmentation=augmentation)
-        conv.save(os.path.join(FLAGS.data_dir, "%s-model-%d-%d-%d-%d-%d-%s-%s-sgd.hdf5" %
+        conv.train(batch_size=FLAGS.batch_size,
+                   epochs=FLAGS.epochs,
+                   data_dir=FLAGS.data_dir,
+                   augmentation=augmentation)
+        conv.evaluate( data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
+
+        conv.save(os.path.join(FLAGS.data_dir, "%s-model-%d-%d-%d-%d-%d-%s-%s-adam.hdf5" %
                   (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
                    FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr))),
-                  os.path.join(FLAGS.data_dir, "%s-history-%d-%d-%d-%d-%d-%s-%s-sgd.csv" %
+                  os.path.join(FLAGS.data_dir, "%s-history-%d-%d-%d-%d-%d-%s-%s-adam.csv" %
                   (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
                    FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr))))
 
-    test_frame = pd.read_csv(os.path.join(FLAGS.data_dir, "test-leafs.csv"))
-    conv.evaluate(test_frame=test_frame, data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
+    if FLAGS.mode == 'cifar':
+        augmentation = True if FLAGS.augmentation == 'Yes' else False
+        conv.train_cifar(batch_size=FLAGS.batch_size, epochs=FLAGS.epochs, augmentation=augmentation)
+        conv.save(os.path.join(FLAGS.data_dir, "cifar-relu-%s-model-%d-%d-%d-%d-%d-%s-%s-adam-gn.hdf5" %
+                  (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
+                   FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr))),
+                  os.path.join(FLAGS.data_dir, "cifar-relu-%s-history-%d-%d-%d-%d-%d-%s-%s-adam-gn.csv" %
+                  (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
+                   FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr))))
+        return
+
 
 
 if __name__ == "__main__":

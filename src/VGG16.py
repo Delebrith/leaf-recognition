@@ -1,5 +1,5 @@
 from src.NeuralNetwork import NeuralNetwork
-from keras.models import Sequential
+from keras.models import Model, Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, InputLayer
 from keras.utils import print_summary
 from keras_preprocessing.image import ImageDataGenerator
@@ -20,66 +20,84 @@ class VGG16(NeuralNetwork):
 
         self.model = Sequential([
             InputLayer(input_shape=(input_height, input_width, 3)),
+
             # block 1
             Conv2D(data_format='channels_last', filters=filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_1_1',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             Conv2D(data_format='channels_last', filters=filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_1_2',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             MaxPooling2D(name='block_1_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 2
             Conv2D(data_format='channels_last', filters=2*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_2_1',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             Conv2D(data_format='channels_last', filters=2*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_2_2',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             MaxPooling2D(name='block_2_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 3
             Conv2D(data_format='channels_last', filters=4*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_3_1',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             Conv2D(data_format='channels_last', filters=4*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_3_2',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             Conv2D(data_format='channels_last', filters=4*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_3_3',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             MaxPooling2D(name='block_3_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 4
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_4_1',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_4_2',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_4_3',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             MaxPooling2D(name='block_4_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # block 5
+
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_5_1',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_5_2',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             Conv2D(data_format='channels_last', filters=8*filters, kernel_size=filter_size, padding='same',
                    kernel_regularizer=regularization, activation='relu', name='block_5_3',
                    kernel_initializer=initializer, bias_initializer=initializer),
+
             MaxPooling2D(name='block_5_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2)),
 
             # fully_concatenated
             Flatten(),
+
             Dense(4096, activation='relu', kernel_regularizer=regularization,
                   kernel_initializer=initializer, bias_initializer=initializer),
+
             Dense(4096, activation='relu', kernel_regularizer=regularization,
                   kernel_initializer=initializer, bias_initializer=initializer),
+
             Dense(classes, activation='softmax', kernel_initializer=initializer, bias_initializer=initializer)
         ])
 
@@ -87,26 +105,26 @@ class VGG16(NeuralNetwork):
         rmsprop = RMSprop(lr=learning_rate)
         sgd = SGD(lr=learning_rate, momentum=0.9)
         self.model.compile(loss='categorical_crossentropy',
-                           optimizer=sgd,
+                           optimizer=adam,
                            metrics=['accuracy'])
         print_summary(self.model)
         self.history = {}
 
-    def train(self, training_frame, validation_frame, batch_size, epochs, data_dir, augmentation=False):
+    def train(self, batch_size, epochs, data_dir, augmentation=False):
         if augmentation:
             train_generator = ImageDataGenerator(rescale=1. / 255.,
                                                  rotation_range=15,
                                                  horizontal_flip=True,
-                                                 width_shift_range=15.0,
-                                                 height_shift_range=10.0,
+                                                 width_shift_range=0.15,
+                                                 height_shift_range=0.05,
                                                  zoom_range=0.10,
                                                  shear_range=0.10,
                                                  fill_mode='nearest')
             val_generator = ImageDataGenerator(rescale=1. / 255.,
                                                rotation_range=15,
                                                horizontal_flip=True,
-                                               width_shift_range=15.0,
-                                               height_shift_range=10.0,
+                                               width_shift_range=0.15,
+                                               height_shift_range=0.05,
                                                zoom_range=0.10,
                                                shear_range=0.10,
                                                fill_mode='nearest')
@@ -114,19 +132,13 @@ class VGG16(NeuralNetwork):
             train_generator = ImageDataGenerator(rescale=1./255.)
             val_generator = ImageDataGenerator(rescale=1./255.)
 
-        training_set = train_generator.flow_from_dataframe(dataframe=training_frame,
-                                                           directory=os.path.join(data_dir, 'training/'),
-                                                           x_col='data',
-                                                           y_col='class',
+        training_set = train_generator.flow_from_directory(directory=os.path.join(data_dir, 'training/'),
                                                            batch_size=batch_size,
                                                            shuffle=True,
                                                            target_size=(self.input_height, self.input_width),
                                                            class_mode='categorical')
 
-        validation_set = val_generator.flow_from_dataframe(dataframe=validation_frame,
-                                                           directory=os.path.join(data_dir, 'validation/'),
-                                                           x_col='data',
-                                                           y_col='class',
+        validation_set = val_generator.flow_from_directory(directory=os.path.join(data_dir, 'validation/'),
                                                            batch_size=batch_size,
                                                            shuffle=True,
                                                            target_size=(self.input_height, self.input_width),
@@ -145,13 +157,10 @@ class VGG16(NeuralNetwork):
                                                 workers=8,
                                                 callbacks=[early_stopping])
 
-    def evaluate(self, test_frame, data_dir, batch_size):
+    def evaluate(self, data_dir, batch_size):
         data_generator = ImageDataGenerator(rescale=1./255.)
 
-        test_set = data_generator.flow_from_dataframe(dataframe=test_frame,
-                                                      directory=os.path.join(data_dir, 'test/'),
-                                                      x_col='data',
-                                                      y_col='class',
+        test_set = data_generator.flow_from_directory(directory=os.path.join(data_dir, 'test/'),
                                                       batch_size=batch_size,
                                                       shuffle=False,
                                                       target_size=(self.input_height, self.input_width),
@@ -162,13 +171,15 @@ class VGG16(NeuralNetwork):
                                                steps=steps_eval)
         print('Networks score -  loss: {}; accuracy: {}'.format(result[0], result[1]))
 
-    def draw_roc(self, test_frame, data_dir):
+        batch = test_set.next()
+        for img, cl in zip(batch[0], batch[1]):
+            print(str(self.model.predict_classes([[img]], batch_size=1)))
+            print(str(cl))
+
+    def draw_roc(self, data_dir):
         data_generator = ImageDataGenerator(rescale=1./255.)
 
-        test_set = data_generator.flow_from_dataframe(dataframe=test_frame,
-                                                      directory=os.path.join(data_dir, 'test/'),
-                                                      x_col='data',
-                                                      y_col='class',
+        test_set = data_generator.flow_from_directory(directory=os.path.join(data_dir, 'test/'),
                                                       batch_size=32,
                                                       shuffle=False,
                                                       target_size=(self.input_height, self.input_width),

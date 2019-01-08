@@ -5,7 +5,7 @@ import sys
 import tensorflow as tf
 import cv2
 import pandas as pd
-from src.file_utils import get_files_in_classes
+from src.file_utils import get_files_and_classes
 
 # ===============DEFINE ARGUMENTS==============
 flags = tf.app.flags
@@ -43,7 +43,7 @@ def main():
     if FLAGS.type not in ['csv', 'jpg']:
         raise ValueError('type has incorrect value')
 
-    image_files, classes = get_files_in_classes(FLAGS.data_src)
+    image_files, classes = get_files_and_classes(FLAGS.data_src)
     print('Total images: %d' % len(image_files))
 
     validation_index = int(FLAGS.validation_set_size * len(image_files))
