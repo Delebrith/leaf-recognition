@@ -1,6 +1,6 @@
 from src.NeuralNetwork import NeuralNetwork
 from keras.models import Model, Sequential
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, InputLayer
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, InputLayer, Input
 from keras.utils import print_summary
 from keras_preprocessing.image import ImageDataGenerator
 from keras.metrics import top_k_categorical_accuracy
@@ -85,6 +85,75 @@ class VGG16(NeuralNetwork):
             Dense(classes, activation='softmax', kernel_regularizer=regularization)
         ])
 
+        input_layer = Input(shape=(input_height, input_width, 3))
+
+        # block 1
+        x = Conv2D(data_format='channels_last', filters=filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_1_1')(input_layer)
+
+        x = Conv2D(data_format='channels_last', filters=filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_1_2')(x)
+
+        x = MaxPooling2D(name='block_1_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2))(x)
+
+        # block 2
+        x = Conv2D(data_format='channels_last', filters=2 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_2_1')(x)
+
+        x = Conv2D(data_format='channels_last', filters=2 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_2_2')(x)
+
+        x = MaxPooling2D(name='block_2_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2))(x)
+
+        # block 3
+        x = Conv2D(data_format='channels_last', filters=4 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_3_1')(x)
+
+        x = Conv2D(data_format='channels_last', filters=4 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_3_2')(x)
+
+        x = Conv2D(data_format='channels_last', filters=4 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_3_3')(x)
+
+        x = MaxPooling2D(name='block_3_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2))(x)
+
+        # block 4
+        x = Conv2D(data_format='channels_last', filters=8 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_4_1')(x)
+
+        x = Conv2D(data_format='channels_last', filters=8 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_4_2')(x)
+
+        x = Conv2D(data_format='channels_last', filters=8 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_4_3')(x)
+
+        x = MaxPooling2D(name='block_4_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2))(x)
+
+        # block 5
+
+        x = Conv2D(data_format='channels_last', filters=8 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_5_1')(x)
+
+        x = Conv2D(data_format='channels_last', filters=8 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_5_2')(x)
+
+        x = Conv2D(data_format='channels_last', filters=8 * filters, kernel_size=filter_size, padding='same',
+               kernel_regularizer=regularization, activation='relu', name='block_5_3')(x)
+
+        x = MaxPooling2D(name='block_5_polling', pool_size=(2, 2), data_format='channels_last', strides=(2, 2))(x)
+
+        # fully_concatenated
+        x = Flatten()(x)
+
+        x = Dense(4096, activation='relu', kernel_regularizer=regularization)(x)
+
+        x = Dense(4096, activation='relu', kernel_regularizer=regularization)(x)
+
+        x = Dense(classes, activation='softmax', kernel_regularizer=regularization)(x)
+
+        self.model = Model(input_layer, x, name='custom-vgg16')
+
+
         adam = Adam(lr=learning_rate)
         rmsprop = RMSprop(lr=learning_rate)
         sgd = SGD(lr=learning_rate, momentum=0.9)
@@ -131,7 +200,7 @@ class VGG16(NeuralNetwork):
         steps_training = training_set.n // batch_size
         steps_validation = validation_set.n // batch_size
 
-        early_stopping = EarlyStopping(min_delta=0.01, patience=5, restore_best_weights=True)
+        early_stopping = EarlyStopping(min_delta=0.001, patience=5, restore_best_weights=True)
 
         self.history = self.model.fit_generator(generator=training_set,
                                                 steps_per_epoch=steps_training,
@@ -154,11 +223,11 @@ class VGG16(NeuralNetwork):
         result = self.model.evaluate_generator(generator=test_set,
                                                steps=steps_eval)
         print('Networks score -  loss: {}; accuracy: {}'.format(result[0], result[1]))
-
-        batch = test_set.next()
-        for img, cl in zip(batch[0], batch[1]):
-            print(str(self.model.predict_classes([[img]], batch_size=1)))
-            print(str(cl))
+        #
+        # batch = test_set.next()
+        # for img, cl in zip(batch[0], batch[1]):
+        #     print(str(self.model.predict_classes([[img]], batch_size=1)))
+        #     print(str(cl))
 
     def draw_roc(self, data_dir):
         data_generator = ImageDataGenerator(rescale=1./255.)
