@@ -37,6 +37,8 @@ flags.DEFINE_string('type', 'lenet', 'String: type of neural network')
 
 flags.DEFINE_float('lr', 0.001, 'Float: learning rate')
 
+flags.DEFINE_string('model', '../../data/model.hdf5', 'Trained model for testing')
+
 FLAGS = flags.FLAGS
 
 
@@ -57,7 +59,7 @@ def main():
                    epochs=FLAGS.epochs,
                    data_dir=FLAGS.data_dir,
                    augmentation=augmentation)
-        conv.evaluate( data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
+        conv.evaluate(data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
 
         conv.save(os.path.join(FLAGS.data_dir, "%s-model-%d-%d-%d-%d-%d-%s-%s-adam.hdf5" %
                   (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
@@ -65,6 +67,12 @@ def main():
                   os.path.join(FLAGS.data_dir, "%s-history-%d-%d-%d-%d-%d-%s-%s-adam.csv" %
                   (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
                    FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr))))
+
+    if FLAGS.mode == 'test':
+        conv.load(FLAGS.model)
+        conv.evaluate(data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
+        conv.top5(data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
+
 
     if FLAGS.mode == 'cifar':
         augmentation = True if FLAGS.augmentation == 'Yes' else False

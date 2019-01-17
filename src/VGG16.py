@@ -2,6 +2,8 @@ from src.NeuralNetwork import NeuralNetwork
 from keras.models import Model, Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, InputLayer, Input
 from keras.utils import print_summary
+from keras import utils
+from keras.datasets import cifar10
 from keras_preprocessing.image import ImageDataGenerator
 from keras.metrics import top_k_categorical_accuracy
 from keras.initializers import RandomNormal, RandomUniform
@@ -267,3 +269,38 @@ class VGG16(NeuralNetwork):
             test_y = np.append(arr=test_y, values=test_set.next()[1]).reshape(((i+2) * batch_size, self.classes))
         top5 = top_k_categorical_accuracy(test_y, predicted_y, 5)
         print("Top-5: {}", top5)
+
+    def train_cifar(self, batch_size, epochs, augmentation=False):
+        (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+        y_train = utils.to_categorical(y_train, self.classes)
+        y_test = utils.to_categorical(y_test, self.classes)
+        x_train = x_train.astype('float32')
+        x_test = x_test.astype('float32')
+        x_train /= 255
+        x_test /= 255
+
+        if augmentation:
+            generator = ImageDataGenerator(rescale=1.0 / 255.0,
+                                           rotation_range=15,
+                                           horizontal_flip=True,
+                                           width_shift_range=0.15,
+                                           height_shift_range=0.5,
+                                           zoom_range=0.10,
+                                           shear_range=0.10,
+                                           fill_mode='nearest')
+            generator.fit(x_train)
+
+            early_stopping = EarlyStopping(min_delta=0.01, patience=5, restore_best_weights=True)
+            self.history = self.model.fit_generator(generator.flow(x_train, y_train),
+                                                    callbacks=[early_stopping],
+                                                    validation_data=(x_test, y_test),
+                                                    epochs=epochs,
+                                                    workers=8,
+                                                    steps_per_epoch=len(x_train) // batch_size,
+                                                    validation_steps=len(x_test) // batch_size)
+        else:
+            self.history = self.model.fit(x_train, y_train,
+                                          batch_size=batch_size,
+                                          epochs=epochs,
+                                          validation_data=(x_test, y_test),
+                                          shuffle=True)
