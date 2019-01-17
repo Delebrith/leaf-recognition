@@ -6,6 +6,7 @@ from keras.initializers import RandomNormal, RandomUniform, glorot_normal, zeros
 from keras.callbacks import EarlyStopping
 from keras.optimizers import Adam, RMSprop, SGD
 from keras.datasets import cifar10
+from keras.metrics import top_k_categorical_accuracy
 from keras import utils
 from sklearn.metrics import roc_curve
 import numpy as np
@@ -108,10 +109,10 @@ class LeNet5(NeuralNetwork):
                                                steps=steps_eval)
         print('Networks score -  loss: {}; accuracy: {}'.format(result[0], result[1]))
 
-        batch = test_set.next()
-        for img, cl in zip(batch[0], batch[1]):
-            print(str(self.model.predict_classes([[img]], batch_size=1)))
-            print(str(cl))
+        # batch = test_set.next()
+        # for img, cl in zip(batch[0], batch[1]):
+        #     print(str(self.model.predict_classes([[img]], batch_size=1)))
+        #     print(str(cl))
 
     def draw_roc(self, data_dir):
         data_generator = ImageDataGenerator(rescale=1./255.)
@@ -165,3 +166,21 @@ class LeNet5(NeuralNetwork):
                                           epochs=epochs,
                                           validation_data=(x_test, y_test),
                                           shuffle=True)
+
+    def top5(self, data_dir, batch_size):
+        data_generator = ImageDataGenerator(rescale=1./255.)
+
+        test_set = data_generator.flow_from_directory(directory=os.path.join(data_dir, 'test/'),
+                                                      batch_size=batch_size,
+                                                      shuffle=False,
+                                                      target_size=(self.input_height, self.input_width),
+                                                      class_mode='categorical')
+        steps_eval = test_set.n // batch_size
+        predicted_y = self.model.predict_generator(generator=test_set,
+                                                   steps=steps_eval)
+        test_set.reset()
+        test_y = test_set.next()[1]
+        for i in range(steps_eval - 1):
+            test_y = np.append(arr=test_y, values=test_set.next()[1]).reshape(((i+2) * batch_size, self.classes))
+        top5 = top_k_categorical_accuracy(test_y, predicted_y, 5)
+        print("Top-5: {}", top5)
