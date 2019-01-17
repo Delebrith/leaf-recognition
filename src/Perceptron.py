@@ -2,18 +2,16 @@ from keras.models import Sequential
 from keras.layers import Dense, Flatten
 from keras.utils import print_summary
 from keras_preprocessing.image import ImageDataGenerator
-import pandas as pd
 from sklearn.metrics import roc_curve
 import numpy as np
+from src.NeuralNetwork import NeuralNetwork
 
 import os
 
 
-class Perceptron:
+class Perceptron(NeuralNetwork):
     def __init__(self, input_width, input_height, first_hidden_size, second_hidden_size, third_hidden_size, classes):
-        self.input_width = input_width
-        self.input_height = input_height
-        self.classes = classes
+        NeuralNetwork.__init__(self, input_width, input_height, classes)
 
         self.model = Sequential([
             Flatten(input_shape=(input_height, input_width, 3)),
@@ -87,14 +85,6 @@ class Perceptron:
         result = self.model.evaluate_generator(generator=test_set,
                                                steps=steps_eval)
         print('Networks score -  loss: {}; accuracy: {}'.format(result[0], result[1]))
-
-    def save(self, model_path, history_path):
-        self.model.save(model_path, overwrite=True)
-        history_frame = pd.DataFrame.from_dict(self.history.history)
-        history_frame.to_csv(history_path)
-
-    def load(self, path):
-        self.model.load_weights(path)
 
     def draw_roc(self, test_frame, data_dir):
         data_generator = ImageDataGenerator(rescale=1./255.,
