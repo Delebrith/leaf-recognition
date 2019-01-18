@@ -10,6 +10,7 @@ from keras.metrics import top_k_categorical_accuracy
 from keras import utils
 from sklearn.metrics import roc_curve
 import numpy as np
+import cv2
 
 import os
 
@@ -184,3 +185,13 @@ class LeNet5(NeuralNetwork):
             test_y = np.append(arr=test_y, values=test_set.next()[1]).reshape(((i+2) * batch_size, self.classes))
         top5 = top_k_categorical_accuracy(test_y, predicted_y, 5)
         print("Top-5: {}", top5)
+
+    def predict(self, image):
+        image = cv2.resize(image, dsize=(self.input_width, self.input_height))
+        image_array = np.asarray(image, dtype=float)
+        image_array *= 1./255.
+        return self.model.predict(x=[[image_array]], batch_size=1)
+
+    def pop_last_layers(self):
+        self.model.pop()
+        self.model.pop()
