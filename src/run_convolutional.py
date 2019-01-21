@@ -61,15 +61,19 @@ def main():
                    augmentation=augmentation)
         conv.evaluate(data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
 
-        conv.save(os.path.join(FLAGS.data_dir, "%s-model-%d-%d-%d-%d-%d-%s-%s-adam.hdf5" %
+        conv.save(os.path.join(FLAGS.data_dir, "%s-model-%d-%d-%d-%d-%d-%s-%s-adam-%s.hdf5" %
                   (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
-                   FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr))),
-                  os.path.join(FLAGS.data_dir, "%s-history-%d-%d-%d-%d-%d-%s-%s-adam.csv" %
+                   FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr), FLAGS.augmentation)),
+                  os.path.join(FLAGS.data_dir, "%s-history-%d-%d-%d-%d-%d-%s-%s-adam-%s.csv" %
                   (FLAGS.type, FLAGS.input_width, FLAGS.input_height, FLAGS.filter_size, FLAGS.filters,
-                   FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr))))
+                   FLAGS.batch_size, FLAGS.regularization, str(FLAGS.lr), FLAGS.augmentation)))
 
     if FLAGS.mode == 'test':
         conv.load(FLAGS.model)
+        conv.evaluate(data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
+        conv.top5(data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
+
+    if FLAGS.mode == 'random':
         conv.evaluate(data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
         conv.top5(data_dir=FLAGS.data_dir, batch_size=FLAGS.batch_size)
 
