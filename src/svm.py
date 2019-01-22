@@ -155,7 +155,9 @@ def main():
     fit_result = svm.fit(X_train, y_train)
     test_result = svm.score(X_test, y_test)
 
-    print("[RESULTS]: {} {} ".format(fit_result, test_result))
+    print("[RESULTS]: fit: {} test: {} ".format(fit_result, test_result))
+    print('Cross-Validation scores: ', cross_val_scores)
+    print("Accuracy: {} (+/- {})".format(cross_val_scores.mean(), cross_val_scores.std() * 2))
 
     return 0
 
