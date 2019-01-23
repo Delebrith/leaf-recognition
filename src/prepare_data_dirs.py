@@ -19,7 +19,7 @@ flags.DEFINE_float('validation_set_size', 0.2,
 flags.DEFINE_float('test_set_size', 0.2, 'Float: The proportion of examples in the dataset to be used for testing')
 
 # Seed for repeatability.
-flags.DEFINE_integer('random_seed', 0, 'Int: Random seed to use for repeatability.')
+flags.DEFINE_integer('random_seed', 1, 'Int: Random seed to use for repeatability.')
 
 FLAGS = flags.FLAGS
 
