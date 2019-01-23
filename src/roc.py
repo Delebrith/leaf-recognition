@@ -52,37 +52,37 @@ def main():
                    ''.format(roc_auc),
              color='purple', linewidth=2)
 
-    perceptron = Perceptron(128, 256, 1024, 512, 128, 32)
-    perceptron.load("../../rgb/augmented/perceptron-model-1024-512-128-input-128-256.hdf5")
-    test_df = pd.read_csv("../../rgb/test-leafs.csv")
-    fpr, tpr = perceptron.draw_roc(test_df, "../../rgb")
-    roc_auc = auc(fpr, tpr)
-
-    plt.plot(fpr, tpr,
-             label='(1024 x 512 x 128) (128 x 256) ROC curve (area = {0:0.2f})'
-                   ''.format(roc_auc),
-             color='blue', linewidth=2)
-
-    perceptron = Perceptron(128, 256, 512, 256, 128, 32)
-    perceptron.load("../../rgb/augmented/perceptron-model-512-256-128-input-128-256.hdf5")
-    test_df = pd.read_csv("../../rgb/test-leafs.csv")
-    fpr, tpr = perceptron.draw_roc(test_df, "../../rgb")
-    roc_auc = auc(fpr, tpr)
-
-    plt.plot(fpr, tpr,
-             label='(512 x 256 x 128) (128 x 256) ROC curve (area = {0:0.2f})'
-                   ''.format(roc_auc),
-             color='lightblue', linewidth=2)
-
-    perceptron = Perceptron(128, 256, 256, 128, 64, 32)
-    perceptron.load("../../rgb/augmented/perceptron-model-256-128-64-input-128-256.hdf5")
-    test_df = pd.read_csv("../../rgb/test-leafs.csv")
-    fpr, tpr = perceptron.draw_roc(test_df, "../../rgb")
-    roc_auc = auc(fpr, tpr)
-    plt.plot(fpr, tpr,
-             label='(256 x 128 x 64) (128 x 256) ROC curve (area = {0:0.2f})'
-                   ''.format(roc_auc),
-             color='aquamarine', linewidth=2)
+    # perceptron = Perceptron(128, 256, 1024, 512, 128, 32)
+    # perceptron.load("../../rgb/augmented/perceptron-model-1024-512-128-input-128-256.hdf5")
+    # test_df = pd.read_csv("../../rgb/test-leafs.csv")
+    # fpr, tpr = perceptron.draw_roc(test_df, "../../rgb")
+    # roc_auc = auc(fpr, tpr)
+    #
+    # plt.plot(fpr, tpr,
+    #          label='(1024 x 512 x 128) (128 x 256) ROC curve (area = {0:0.2f})'
+    #                ''.format(roc_auc),
+    #          color='blue', linewidth=2)
+    #
+    # perceptron = Perceptron(128, 256, 512, 256, 128, 32)
+    # perceptron.load("../../rgb/augmented/perceptron-model-512-256-128-input-128-256.hdf5")
+    # test_df = pd.read_csv("../../rgb/test-leafs.csv")
+    # fpr, tpr = perceptron.draw_roc(test_df, "../../rgb")
+    # roc_auc = auc(fpr, tpr)
+    #
+    # plt.plot(fpr, tpr,
+    #          label='(512 x 256 x 128) (128 x 256) ROC curve (area = {0:0.2f})'
+    #                ''.format(roc_auc),
+    #          color='lightblue', linewidth=2)
+    #
+    # perceptron = Perceptron(128, 256, 256, 128, 64, 32)
+    # perceptron.load("../../rgb/augmented/perceptron-model-256-128-64-input-128-256.hdf5")
+    # test_df = pd.read_csv("../../rgb/test-leafs.csv")
+    # fpr, tpr = perceptron.draw_roc(test_df, "../../rgb")
+    # roc_auc = auc(fpr, tpr)
+    # plt.plot(fpr, tpr,
+    #          label='(256 x 128 x 64) (128 x 256) ROC curve (area = {0:0.2f})'
+    #                ''.format(roc_auc),
+    #          color='aquamarine', linewidth=2)
 
     perceptron = Perceptron(64, 128, 1024, 512, 128, 32)
     perceptron.load("../../rgb/augmented/perceptron-model-1024-512-128-input-64-128.hdf5")

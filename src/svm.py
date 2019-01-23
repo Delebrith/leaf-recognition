@@ -113,7 +113,7 @@ def main():
                                                         shuffle=True, random_state=FLAGS.random_seed)
 
     svm = SVC(kernel=FLAGS.kernel, degree=2, C=FLAGS.penalty, class_weight='balanced', random_state=FLAGS.random_seed, verbose=2)
-    cross_val_scores = cross_val_score(estimator=svm, X=X_train, y=y_train, cv=12, verbose=1, n_jobs=4, scoring="accuracy")
+    cross_val_scores = cross_val_score(estimator=svm, X=X_train, y=y_train, cv=4, verbose=1, n_jobs=4, scoring="accuracy")
 
     print('Cross-Validation scores: ', cross_val_scores)
     print("Accuracy: {} (+/- {})".format(cross_val_scores.mean(), cross_val_scores.std() * 2))
@@ -148,7 +148,7 @@ def main():
 
 
     title = "Learning Curves (SVM, {} kernel, c={})".format(FLAGS.kernel, FLAGS.penalty)
-    plot_learning_curve(svm, title, X_train, y_train, (0.0, 1.01), cv=12, n_jobs=4)
+    plot_learning_curve(svm, title, X_train, y_train, (0.0, 1.01), cv=4, n_jobs=4)
 
     plt.show()
 

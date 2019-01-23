@@ -1,3 +1,4 @@
+from src.DfPerceptron import DfPerceptron
 from src.LeNet5 import LeNet5
 from matplotlib import pyplot as plt
 from sklearn.metrics import auc
@@ -7,6 +8,7 @@ from src.svm import get_train_data, SVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve
 import numpy as np
+import pandas as pd
 
 
 def plot_cnn(width, height, filter_size, filters, batch_size, regularization, color):
@@ -58,13 +60,24 @@ def plot_svm(kernel, C, color):
 def main():
     plt.figure(1)
 
-    plot_cnn(32, 64, 3, 20, 32, 'None', '#9999FF')
+    plot_cnn(32, 64, 3, 20, 32, 'None', '#00FF00')
     plot_svm('poly', 0.1, '#FF0000')
     plot_svm('poly', 1, '#FF9999')
     plot_svm('poly', 10, '#FF00FF')
     plot_svm('rbf', 0.1, '#0000FF')
     plot_svm('rbf', 1, '#9999FF')
     plot_svm('rbf', 10, '#00FFFF')
+
+    perceptron = DfPerceptron(512, 256, 128, 32)
+    perceptron.load("../../rgb-to-csv2/perceptron-model-512-256-128-input-6-1000.hdf5")
+    test_df = pd.read_csv("../../rgb-to-csv2/test-leafs.csv")
+    fpr, tpr = perceptron.draw_roc(test_df, "../../rgb-to-csv2")
+    roc_auc = auc(fpr, tpr)
+
+    plt.plot(fpr, tpr,
+             label='perceptron (512 x 256 x 128) (6 x 1000) ROC curve (area = {0:0.2f})'
+                   ''.format(roc_auc),
+             color='#00FF99', linewidth=1)
 
     plt.plot([0, 1], [0, 1], 'k--', lw=1)
     plt.xlabel('False Positive Rate')
